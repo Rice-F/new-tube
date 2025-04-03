@@ -17,7 +17,7 @@ export const HomeLayout = ({children}:HomeLayoutProps) => {
           </main>
         </div>
       </div>
-      {children}
+      {/* {children} */}
     </SidebarProvider>
   );
 }
