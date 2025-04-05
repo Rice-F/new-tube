@@ -10,10 +10,11 @@ import {Button} from "@/components/ui/button"
 export const AuthButton = () => {
   // TODO: add different auth states
   return (
+    // 空标签表示不渲染任何DOM元素
+    // 在返回多个元素时，不用必须被div包裹，不影响布局、样式
     <>
       <SignedIn>
         <UserButton
-          
         />
       </SignedIn>
       <SignedOut>
