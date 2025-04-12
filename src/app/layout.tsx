@@ -28,6 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // afterSignOutUrl 注销后重定向至首页
     <ClerkProvider afterSignOutUrl="/">
       <html lang="en">
         {/* className={`${geistSans.variable} ${geistMono.variable} antialiased`} */}

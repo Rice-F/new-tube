@@ -48,7 +48,7 @@ export const PersonalSection = () => {
               <SidebarMenuButton
                 tooltip={item.title}
                 asChild
-                isActive={false} // TODO
+                isActive={false}
                 onClick={(e) => {
                   if(!isSignedIn && item.auth) {
                     e.preventDefault();
