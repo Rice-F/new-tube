@@ -5,7 +5,6 @@ import {eq} from 'drizzle-orm'
 
 export async function POST(req: Request) {
   try {
-    console.log('请求', req)
     const evt = await verifyWebhook(req)
 
     const eventType = evt.type
