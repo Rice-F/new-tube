@@ -33,7 +33,12 @@
         "@radix-ui/react-toggle": "^1.1.2",
         "@radix-ui/react-toggle-group": "^1.1.2",
         "@radix-ui/react-tooltip": "^1.1.8",
+        "@tanstack/react-query": "^5.73.3",
+        "@trpc/client": "^11.1.0",
+        "@trpc/react-query": "^11.1.0",
+        "@trpc/server": "^11.1.0",
         "class-variance-authority": "^0.7.1",
+        "client-only": "^0.0.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "concurrently": "^9.1.2",
@@ -51,6 +56,7 @@
         "react-hook-form": "^7.54.2",
         "react-resizable-panels": "^2.1.7",
         "recharts": "^2.15.1",
+        "server-only": "^0.0.1",
         "sonner": "^2.0.1",
         "svix": "^1.63.1",
         "tailwind-merge": "^3.0.2",
@@ -401,6 +407,16 @@
     "@tailwindcss/oxide-win32-x64-msvc": ["@tailwindcss/oxide-win32-x64-msvc@4.0.16", "https://registry.npmmirror.com/@tailwindcss/oxide-win32-x64-msvc/-/oxide-win32-x64-msvc-4.0.16.tgz", { "os": "win32", "cpu": "x64" }, "sha512-M35hoFrhJe+1QdSiZpn85y8K7tfEVw6lswv3TjIfJ44JiPjPzZ4URg+rsTjTq0kue6NjNCbbY99AsRSSpJZxOw=="],
 
     "@tailwindcss/postcss": ["@tailwindcss/postcss@4.0.16", "https://registry.npmmirror.com/@tailwindcss/postcss/-/postcss-4.0.16.tgz", { "dependencies": { "@alloc/quick-lru": "^5.2.0", "@tailwindcss/node": "4.0.16", "@tailwindcss/oxide": "4.0.16", "lightningcss": "1.29.2", "postcss": "^8.4.41", "tailwindcss": "4.0.16" } }, "sha512-wgNRdylwhUk04T27Mlpi4fB4adPxChbqrqKhvYFJmYP+zW4Ren+PwYoUcns0xlbjolcjQuAG+GZHRQAfF7LOCg=="],
+
+    "@tanstack/query-core": ["@tanstack/query-core@5.73.3", "https://registry.npmmirror.com/@tanstack/query-core/-/query-core-5.73.3.tgz", {}, "sha512-LUpsgVT3IkvOECdkQ3QD6esczSH71mAzH/LDZ2cu8j6w430v5W0JB1ulzsG8FFwFBd5fm/ePM2DFpg9TucRMgQ=="],
+
+    "@tanstack/react-query": ["@tanstack/react-query@5.73.3", "https://registry.npmmirror.com/@tanstack/react-query/-/react-query-5.73.3.tgz", { "dependencies": { "@tanstack/query-core": "5.73.3" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-umsAEsVsSSnrOZrstX/OlctdqkRZm6vPsetmbl241tdNo0jT3s+0bUoof9kCaTsPr/GopPlbJ1OYlrZj4toKzg=="],
+
+    "@trpc/client": ["@trpc/client@11.1.0", "https://registry.npmmirror.com/@trpc/client/-/client-11.1.0.tgz", { "peerDependencies": { "@trpc/server": "11.1.0", "typescript": ">=5.7.2" } }, "sha512-Q3pL4p7AddxI/ZJTEFo1utKSdasDFjZPECIPsKDkthEt52k530JkYVltTdLkYFKrNWXKKBo8MN7NwchelczoRw=="],
+
+    "@trpc/react-query": ["@trpc/react-query@11.1.0", "https://registry.npmmirror.com/@trpc/react-query/-/react-query-11.1.0.tgz", { "peerDependencies": { "@tanstack/react-query": "^5.67.1", "@trpc/client": "11.1.0", "@trpc/server": "11.1.0", "react": ">=18.2.0", "react-dom": ">=18.2.0", "typescript": ">=5.7.2" } }, "sha512-qdqKdFM8hVy/YSBCg1/3VO+IgB6Nbul3Fk1SA3lefGf0bkYZdWVVyKab8HBAfOWlMsuRufhVLPdKYmnjzBrK9g=="],
+
+    "@trpc/server": ["@trpc/server@11.1.0", "https://registry.npmmirror.com/@trpc/server/-/server-11.1.0.tgz", { "peerDependencies": { "typescript": ">=5.7.2" } }, "sha512-uAJ7ikejeujVkf53XFJ/0W8nr7bDjul+Szk5Rsepq97Hb/WS1RkRXdyX4KqAyCE9b1vDFCJVJwSxiIZdRtbTZQ=="],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.9.0", "https://registry.npmmirror.com/@tybys/wasm-util/-/wasm-util-0.9.0.tgz", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw=="],
 

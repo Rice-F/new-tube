@@ -1,9 +1,13 @@
-import Image from 'next/image';
+'use client';
+
+import {trpc} from '@/trpc/client';
 
 export default function Home() {
+  const {data} = trpc.hello.useQuery({text: 'world999'});
+
   return (
     <div>
-      main
+      Client component says: {data?.greeting}
     </div>
   );
 }
