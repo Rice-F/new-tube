@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 export default async function Home() {
   // prefetch hello接口的数据
   // void 是为了忽略 Promise 返回值（因为我们只是想执行它，不 care 结果）
-  // 这一步发生在SSR-服务器渲染阶段
+  // 这一步发生在 SSR - 服务器渲染阶段
   void trpc.hello.prefetch({text: 'prefetch data'}); 
 
   // HydrateClient 组件会在客户端渲染时将服务器端的缓存数据传递给客户端
