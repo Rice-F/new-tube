@@ -5,6 +5,7 @@ import {auth} from '@clerk/nextjs/server';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { cache } from 'react';
 import superjson from 'superjson';
+import {ratelimit} from '@/lib/ratelimit';
 
 // 创建tRPC上下文
 // 该函数会在每个请求中被调用
@@ -36,9 +37,7 @@ export const baseProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(async function isAuthed(opts) {
   const {ctx} = opts;
 
-  if (!ctx.clerkUserId) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' }); // 自动返回401
-  }
+  if (!ctx.clerkUserId) throw new TRPCError({ code: 'UNAUTHORIZED' }); // 自动返回401
 
   const [user] = await db
     .select()
@@ -46,9 +45,11 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(opts) 
     .where(eq(users.clerkId, ctx.clerkUserId))
     .limit(1);
 
-  if (!user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' }); // 自动返回401
-  }
+  if (!user) throw new TRPCError({ code: 'UNAUTHORIZED' }); // 自动返回401
+
+  const {success} = await ratelimit.limit(user.id);
+
+  if(!success) throw new TRPCError({code: 'TOO_MANY_REQUESTS'});
 
   // 请求继续，进入实际的处理函数(resolver)
   return opts.next({
