@@ -1,25 +1,28 @@
 import {HydrateClient, trpc} from '@/trpc/server';
-import { PageClient } from './client';
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import {HomeView} from '@/modules/home/ui/views/home-view';
 
-export default async function Home() {
-  // prefetch hello接口的数据
-  // void 是为了忽略 Promise 返回值（因为我们只是想执行它，不 care 结果）
-  // 这一步发生在 SSR - 服务器渲染阶段
-  void trpc.hello.prefetch({text: 'prefetch data'}); 
+// 动态渲染 dynamic rendering
+// 强制每次都获取实时数据
+export const dynamic = 'force-dynamic'; 
 
-  // HydrateClient 组件会在客户端渲染时将服务器端的缓存数据传递给客户端
-  // Suspense搭配react query的useSuspenseQuery使用，加载中用fallback，加载后一次性渲染<PageClient/>
+interface PageProps {
+  searchParams: Promise<{
+    categoryId?: string;
+  }>
+}
+
+const Page = async ({searchParams}: PageProps) => {
+  const {categoryId} = await searchParams;
+ 
+  void trpc.categories.getMany.prefetch(); 
+
   return (
     <div>
       <HydrateClient>
-        <Suspense fallback={<p>Loading...</p>}>
-          <ErrorBoundary fallback={<p>Something went wrong</p>}>
-            <PageClient/> 
-          </ErrorBoundary>
-        </Suspense>
+        <HomeView categoryId={categoryId}/>
       </HydrateClient>
     </div>
   );
 }
+
+export default Page;
