@@ -1,5 +1,6 @@
 'use client'
 
+import {cn} from '@/lib/utils';
 import {
   Carousel,
   CarouselApi,
@@ -28,6 +29,13 @@ export const FilterCarousel = ({
 }: FilterCarouselProps) => {
   return (
     <div className='relative w-full'>
+      {/* Left Fade */}
+      <div
+        className={cn(
+          'absolute left-12 top-0 bottom-0 z-1 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none',
+          false && 'hidden'
+        )}
+      ></div>
       <Carousel
         opts={{
           align: 'start',
@@ -58,6 +66,13 @@ export const FilterCarousel = ({
         <CarouselPrevious className='left-0 z-20'/>
         <CarouselNext className='right-0 z-20'/>
       </Carousel>
+      {/* Right Fade */}
+      <div
+        className={cn(
+          'absolute right-12 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none',
+          false && 'hidden'
+        )}
+      ></div>
     </div>
   )
 }
