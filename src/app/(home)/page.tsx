@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 interface PageProps {
   searchParams: Promise<{
-    categoryId?: string;
+    categoryId?: string; // 可选参数
   }>
 }
 

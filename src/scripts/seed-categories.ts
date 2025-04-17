@@ -27,7 +27,7 @@ async function main () {
     await db.insert(categories).values(value);
   }catch(error) {
     console.log('Error seeding categories:', error);
-    process.exit(1);
+    process.exit(1); // 终止进程，非正常退出
   }
 }
 main()
