@@ -1,6 +1,6 @@
 "use client";
 
-import { UserCircleIcon } from "lucide-react"
+import { ClapperboardIcon, UserCircleIcon } from "lucide-react"
 
 import {UserButton, SignInButton, SignedIn, SignedOut} from "@clerk/nextjs"
 
@@ -14,8 +14,15 @@ export const AuthButton = () => {
     // 在返回多个元素时，不用必须被div包裹，不影响布局、样式
     <>
       <SignedIn>
-        <UserButton
-        />
+        <UserButton>
+          <UserButton.MenuItems>
+            <UserButton.Link
+              label="Studio"
+              href="/studio" 
+              labelIcon={<ClapperboardIcon className="size-4" />}
+            />
+          </UserButton.MenuItems>
+        </UserButton>        
       </SignedIn>
       <SignedOut>
         <SignInButton mode="modal">
