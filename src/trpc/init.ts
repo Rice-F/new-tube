@@ -44,7 +44,7 @@ export const protectedProcedure = t.procedure.use(async function isAuthed(opts) 
     .from(users)
     .where(eq(users.clerkId, ctx.clerkUserId))
     .limit(1);
-
+  
   if (!user) throw new TRPCError({ code: 'UNAUTHORIZED' }); // 自动返回401
 
   const {success} = await ratelimit.limit(user.id);

@@ -1,10 +1,12 @@
 import {categoriesRouter} from '@/modules/categories/server/procedures';
+import {studioRouter} from '@/modules/studio/server/procedures';
 
 import {createTRPCRouter } from '../init';
 
 // trpc主路由
 export const appRouter = createTRPCRouter({
   categories: categoriesRouter,
+  studio: studioRouter
 });
 
 export type AppRouter = typeof appRouter;

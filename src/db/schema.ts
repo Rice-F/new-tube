@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(), 
   imageUrl: text("image_url").notNull(), 
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updateAt: timestamp("update_at").defaultNow().notNull(),
+  updatedAt: timestamp("update_at").defaultNow().notNull(),
 }, t=> [uniqueIndex("clerk_id_idx").on(t.clerkId)]); // 唯一索引，搜索优化
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -19,7 +19,7 @@ export const categories = pgTable("categories", {
   name: text("name").notNull().unique(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updateAt: timestamp("update_at").defaultNow().notNull(),
+  updatedAt: timestamp("update_at").defaultNow().notNull(),
 }, t => [uniqueIndex("name_idx").on(t.name)]);
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -37,7 +37,7 @@ export const videos = pgTable("videos", {
     onDelete: "set null", // 级联删除，如果分类被删除，则将视频的分类设置为null，但不删除视频
   }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updateAt: timestamp("update_at").defaultNow().notNull(),
+  updatedAt: timestamp("update_at").defaultNow().notNull(),
 })
 
 export const videoRelations = relations(videos, ({ one }) => ({
