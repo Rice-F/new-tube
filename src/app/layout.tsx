@@ -6,6 +6,7 @@ import {ClerkProvider} from "@clerk/nextjs";
 import { TRPCProvider } from "@/trpc/client";
 
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -37,7 +38,10 @@ export default function RootLayout({
         <body
           className={inter.className}
         >
-          <TRPCProvider>{children}</TRPCProvider>
+          <TRPCProvider>
+            <Toaster />
+            {children}
+          </TRPCProvider>
         </body>
       </html>
     </ClerkProvider>
