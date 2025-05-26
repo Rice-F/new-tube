@@ -28,9 +28,13 @@ export const VideosSection = () => {
 const VideosSectionSuspense = () => {
 
   const [videos, query] = trpc.studio.getMany.useSuspenseInfiniteQuery(
+    // 接口定义的参数
     {
       limit: DEFAULT_LIMIT,
     },
+    // React Query的配置项
+    // lastPage 指返回的分页数据
+    // nextCursor 下一次分页请求需要发送的标记
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
@@ -53,7 +57,7 @@ const VideosSectionSuspense = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {videos.pages.flatMap((page) => page.items).map(video => (
+              {videos.pages.flatMap(page => page.items).map(video => (
                 <Link
                   href={`/studio/videos/${video.id}`}
                   key={video.id}
@@ -71,7 +75,6 @@ const VideosSectionSuspense = () => {
           </Table>
         </div>
       </div>
-      {/* {JSON.stringify(data)} */}
       <InfiniteScroll
         hasNextPage = {query.hasNextPage}
         isFetchingNextPage = {query.isFetchingNextPage}
