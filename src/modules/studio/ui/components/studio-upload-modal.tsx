@@ -6,6 +6,7 @@ import {Loader2Icon, PlusIcon} from 'lucide-react';
 import {trpc} from "@/trpc/client"
 import {Button} from '@/components/ui/button';
 import { ResponsiveModal } from '@/components/responsive-modal'
+import { StudioUploader } from './studio-uploader';
 
 export const StudioUploadModal = () => {
   const utils = trpc.useUtils()
@@ -26,10 +27,16 @@ export const StudioUploadModal = () => {
     <>
       <ResponsiveModal
         title="Upload a video"
-        open={!!create.data} // create.data 是 mutation 返回的数据（比如服务器创建后返回的新视频）
+        open={!!create.data?.url} // create.data 是 mutation 返回的数据（比如服务器创建后返回的新视频）
         onOpenChange={() => {create.reset()}} // 关闭时重置mutation状态
       >
-        <p>this is upload</p>
+        {create.data?.url 
+          ? <StudioUploader
+              endpoint={create.data.url} 
+              onSuccess={() => {}}
+            /> 
+          : <Loader2Icon />
+        }
       </ResponsiveModal>
       <Button
         variant="secondary"
