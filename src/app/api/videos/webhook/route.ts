@@ -1,11 +1,11 @@
 import { eq } from 'drizzle-orm'
-import { headers } from 'next/headers'
+import { headers } from 'next/headers'  // Next.js 内置获取请求头
 import {
   VideoAssetCreatedWebhookEvent,
   VideoAssetErroredWebhookEvent,
   VideoAssetReadyWebhookEvent,
   VideoAssetTrackReadyWebhookEvent
-} from '@mux/mux-node/resources/webhooks'
+} from '@mux/mux-node/resources/webhooks'  // Mux 提供的事件类型
 
 import { db } from "@/db"
 import { mux } from '@/lib/mux'
@@ -13,6 +13,7 @@ import { videos } from '@/db/schema'
 
 const SIGNING_SECRET = process.env.MUX_WEBHOOK_SECRET!
 
+// 联合类型
 type WebhookEvent = 
   | VideoAssetCreatedWebhookEvent
   | VideoAssetErroredWebhookEvent
@@ -31,18 +32,21 @@ export const POST = async (request: Request) => {
     return new Response('No signature found', { status: 401 })
   }
 
-  const payload = await request.json()
+  const payload = await request.json() // 请求体
   const body = JSON.stringify(payload)
 
   mux.webhooks.verifySignature(
-    body,
+    body,  // body
     {
-      "mux-signature": muxSignature,
+      "mux-signature": muxSignature,  // header
     },
-    SIGNING_SECRET
+    SIGNING_SECRET // secret
   )
 
+  // 类型断言
+  // WebhookEvent["type"] 索引访问类型
   switch(payload.type as WebhookEvent["type"]) {
+    // 已创建
     case "video.asset.created": {
       const data = payload.data as VideoAssetCreatedWebhookEvent["data"]
 

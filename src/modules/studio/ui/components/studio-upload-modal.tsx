@@ -16,7 +16,7 @@ export const StudioUploadModal = () => {
   const create = trpc.videos.create.useMutation({
     onSuccess: () => {
       toast.success('Video created')
-      utils.studio.getMany.invalidate() // 使studio.getMany缓存失效，强制获取最新数据
+      utils.studio.getMany.invalidate() // 使utils.studio.getMany这个查询缓存失效，强制获取最新数据
     },
     onError: (err) => {
       toast.error(err.message)
@@ -38,6 +38,7 @@ export const StudioUploadModal = () => {
           : <Loader2Icon />
         }
       </ResponsiveModal>
+      {/* create.isPending 是否请求中，是否正在mutation */}
       <Button
         variant="secondary"
         onClick={() => create.mutate()} // 触发mutation，提交请求
