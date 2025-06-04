@@ -17,6 +17,9 @@ import Link from 'next/link'
 
 import { VideoThumbnail } from '@/modules/videos/ui/components/video-thumbnail'
 
+import { snakeCaseToTitle } from '@/lib/utils'
+import { format } from 'date-fns'
+
 export const VideosSection = () => {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -79,8 +82,20 @@ const VideosSectionSuspense = () => {
                             duration={video.duration || 0}
                           />
                         </div>
+                        <div className='flex flex-col overflow-hidden gap-y-1'>
+                          <span className='text-sm line-clamp-1'>{video.title}</span>
+                          <span className='text-xs text-muted-foreground line-clamp-1'>{video.description || 'No description'}</span>
+                        </div>
                       </div>
                     </TableCell>
+                    <TableCell>Visibility</TableCell>
+                    <TableCell className='text-sm truncate'>
+                      <div className='flex items-center'>{snakeCaseToTitle(video.muxStatus || 'error')}</div>
+                    </TableCell>
+                    <TableCell>{format(new Date(video.createdAt), 'd MMM yyyy')}</TableCell>
+                    <TableCell>Views</TableCell>
+                    <TableCell>Comments</TableCell>
+                    <TableCell>Like</TableCell>
                   </TableRow>
                 </Link>
               ))}
