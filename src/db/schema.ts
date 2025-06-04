@@ -1,5 +1,5 @@
 import {relations} from "drizzle-orm";
-import { pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(), // UUID类型，主键，默认值为随机生成
@@ -36,6 +36,9 @@ export const videos = pgTable("videos", {
   muxPlaybackId: text("mux_playback_id").unique(), // 回放视频并生成缩略图或预览
   muxTrackId: text("mux_track_id").unique(), // 视频字幕
   muxTrackStatus: text("mux_track_status"), // 视频字幕
+  thumbnailUrl: text('thumbnail_url'), // 缩略图
+  previewUrl: text('preview_url'),  // 预览
+  duration: integer("duration"),
   userId: uuid("user_id").references(() => users.id, { // 外键 - 关联到users表的id字段
     onDelete: "cascade", // 级联删除，如果用户被删除，则删除该用户的所有视频
   }).notNull(),

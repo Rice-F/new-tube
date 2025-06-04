@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/table'
 import Link from 'next/link'
 
+import { VideoThumbnail } from '@/modules/videos/ui/components/video-thumbnail'
+
 export const VideosSection = () => {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -67,7 +69,18 @@ const VideosSectionSuspense = () => {
                     className='cursor-pointer'
                     key={video.id}
                   >
-                    <TableCell>{video.title}</TableCell>
+                    <TableCell>
+                      <div className='flex items-center gap-4'>
+                        <div className='relative aspect-video w-36 shrink-0'>
+                          <VideoThumbnail
+                            imageUrl={video.thumbnailUrl} 
+                            previewUrl={video.previewUrl}
+                            title={video.title}
+                            duration={video.duration || 0}
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 </Link>
               ))}
