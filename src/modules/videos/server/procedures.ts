@@ -15,6 +15,16 @@ export const videosRouter = createTRPCRouter({
         passthrough: userId, // 传递用户ID到Mux
         playback_policy: ['public'], // 设置播放策略为公开
         // mp4_support: "standard", // 设置MP4支持为标准
+        input: [
+          {
+            generated_subtitles: [
+              {
+                language_code: 'en',
+                name: 'English'
+              }
+            ]
+          }
+        ]
       },
       cors_origin: '*', // 允许所有CORS来源
     })

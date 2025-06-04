@@ -4,7 +4,8 @@ import {
   VideoAssetCreatedWebhookEvent,
   VideoAssetErroredWebhookEvent,
   VideoAssetReadyWebhookEvent,
-  VideoAssetTrackReadyWebhookEvent
+  VideoAssetTrackReadyWebhookEvent,
+  VideoAssetDeletedWebhookEvent,
 } from '@mux/mux-node/resources/webhooks'  // Mux 提供的事件类型
 
 import { db } from "@/db"
@@ -19,6 +20,7 @@ type WebhookEvent =
   | VideoAssetErroredWebhookEvent
   | VideoAssetReadyWebhookEvent
   | VideoAssetTrackReadyWebhookEvent
+  | VideoAssetDeletedWebhookEvent
 
 export const POST = async (request: Request) => {
   if(!SIGNING_SECRET) {
@@ -93,6 +95,59 @@ export const POST = async (request: Request) => {
           duration
         })
         .where(eq(videos.muxUploadId, data.upload_id))
+      break;
+    }
+
+    // error
+    case 'video.asset.errored': {
+      const data = payload.data as VideoAssetErroredWebhookEvent['data']
+
+      if(!data.upload_id) {
+        return new Response("Missing upload Id", { status: 400 })
+      }
+
+      await db
+        .update(videos)
+        .set({
+          muxStatus: data.status
+        })
+        .where(eq(videos.muxUploadId, data.upload_id))
+      break;
+    }
+
+    // 已删除
+    case 'video.asset.deleted': {
+      const data = payload.data as VideoAssetDeletedWebhookEvent['data']
+
+      if(!data.upload_id) {
+        return new Response("Missing upload Id", { status: 400 })
+      }
+
+      await db
+        .delete(videos)
+        .where(eq(videos.muxUploadId, data.upload_id))
+      break;
+    }
+
+    // 字幕文本轨道就绪
+    case "video.asset.track.ready": {
+      const data = payload.data as VideoAssetTrackReadyWebhookEvent['data'] & { asset_id: string }
+
+      const assetId = data.asset_id
+      const trackId = data.id
+      const status = data.status
+
+      if(!assetId) {
+        return new Response('Missing asset ID', {status: 400})
+      }
+
+      await db
+        .update(videos)
+        .set({
+          muxTrackId: trackId,
+          muxStatus: status
+        })
+        .where(eq(videos.muxAssetId, assetId))
       break;
     }
   }
