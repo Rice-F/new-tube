@@ -11,7 +11,7 @@ interface VideoIdPageProps {
 const Page = async ({ params }: VideoIdPageProps) => {
   const { videoId } = await params;
 
-  void trpc.studio.getOne.prefetchInfinite({ id: videoId });
+  void trpc.studio.getOne.prefetch({ id: videoId });
 
   return (
     <HydrateClient>
