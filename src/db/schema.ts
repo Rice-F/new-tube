@@ -1,5 +1,11 @@
 import {relations} from "drizzle-orm";
 import { integer, pgTable, pgEnum, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { 
+  createInsertSchema,  // 插入验证 - 定义插入数据库的数据结构
+  createUpdateSchema,  // 更新验证 - 定义更新数据库的数据结构
+  createSelectSchema,  // 查询验证 - 定义查询数据库的数据结构
+ } from 'drizzle-zod'
+
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(), // UUID类型，主键，默认值为随机生成
@@ -54,6 +60,10 @@ export const videos = pgTable("videos", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("update_at").defaultNow().notNull(),
 })
+
+export const videosInsertSchema = createInsertSchema(videos)
+export const videosUpdateSchema = createUpdateSchema(videos)
+export const videosSelectSchema = createSelectSchema(videos)
 
 export const videoRelations = relations(videos, ({ one }) => ({
   user: one(users, {

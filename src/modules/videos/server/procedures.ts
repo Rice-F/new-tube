@@ -1,9 +1,39 @@
 import {db} from '@/db'
 import {mux} from '@/lib/mux'
-import {videos} from '@/db/schema'
+import {videos, videosUpdateSchema} from '@/db/schema'
+import {TRPCError} from '@trpc/server'
 import { protectedProcedure, createTRPCRouter } from '@/trpc/init'
+import { and, eq } from 'drizzle-orm'
 
 export const videosRouter = createTRPCRouter({
+  update: protectedProcedure
+    .input(videosUpdateSchema) // 使用videosUpdateSchema作为输入验证规则
+    .mutation(async ({ctx, input}) => {
+      const {id: userId} = ctx.user
+
+      if(!input.id) {
+        throw new TRPCError({ code: 'BAD_REQUEST' })
+      }
+
+      const [updatedVideo] = await db
+        .update(videos)
+        .set({
+          title: input.title,
+          description: input.description,
+          categoryId: input.categoryId,
+          visibility: input.visibility,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(videos.id, input.id), // 确保更新的是指定的视频
+          eq(videos.userId, userId) // 确保用户只能更新自己的视频
+        ))
+        .returning()
+
+        if(!updatedVideo) {
+          throw new TRPCError({ code: 'NOT_FOUND' })
+        }
+    }),
   // mutation对应对数据库的增删改，表示会修改数据库数据
   create: protectedProcedure.mutation(async ({ctx}) => {
     const {id: userId} = ctx.user
