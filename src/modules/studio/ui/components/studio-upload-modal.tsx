@@ -2,14 +2,17 @@
 
 import {toast} from 'sonner'
 import {Loader2Icon, PlusIcon} from 'lucide-react';
+import {useRouter} from 'next/navigation';
 
 import {trpc} from "@/trpc/client"
+
 import {Button} from '@/components/ui/button';
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { StudioUploader } from './studio-uploader';
 
 export const StudioUploadModal = () => {
   const utils = trpc.useUtils()
+  const router = useRouter()
 
   // create是一个mutation对象
   // useMutation 处理数据写操作（create、update、delete）等的Hook
@@ -23,6 +26,13 @@ export const StudioUploadModal = () => {
     }
   });
 
+  const onSuccess = () => {
+    if(!create.data?.video.id)  return
+
+    create.reset() // 重置mutation状态
+    router.push(`/studio/videos/${create.data.video.id}`) // 跳转到新创建的视频详情页
+  }
+
   return (
     <>
       <ResponsiveModal
@@ -33,7 +43,7 @@ export const StudioUploadModal = () => {
         {create.data?.url 
           ? <StudioUploader
               endpoint={create.data.url} 
-              onSuccess={() => {}}
+              onSuccess={onSuccess}
             /> 
           : <Loader2Icon />
         }
