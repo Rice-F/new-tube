@@ -2,14 +2,14 @@
 
 import { trpc } from '@/trpc/client'
 
-import {Suspense} from 'react'
+import {Suspense, useState} from 'react'
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { MoreVerticalIcon, TrashIcon } from 'lucide-react';
+import { CopyCheckIcon, CopyIcon, MoreVerticalIcon, TrashIcon } from 'lucide-react';
 
 import { toast } from 'sonner'
 
@@ -39,6 +39,10 @@ import {
 } from '@/components/ui/select'
 
 import { videosUpdateSchema } from '@/db/schema';
+
+import { VideoPlayer } from '@/modules/videos/ui/components/video-player'
+
+import Link from 'next/link'
 
 interface FormSectionProps {
   videoId: string;
@@ -76,11 +80,24 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
 
   const form = useForm<z.infer<typeof videosUpdateSchema>>({
     resolver: zodResolver(videosUpdateSchema), // 使用videosUpdateSchema验证模式作为表单验证规则
-    defaultValues: video
+    defaultValues: video // 表单默认值
   })
 
   const onSubmit = (data: z.infer<typeof videosUpdateSchema>) => {
-    update.mutateAsync(data)
+    update.mutateAsync(data)  // 异步触发函数，返回promise
+  }
+
+  const fullUrl = `${process.env.VERCEL_URL || 'http://localhost:3000'}/videos/${video.id}`
+
+  const [isCopied, setIsCopied] = useState(false)
+
+  const onCopy = async () => {
+    await navigator.clipboard.writeText(fullUrl)
+    setIsCopied(true)
+    setTimeout(() => {
+      setIsCopied(false)
+    }
+    , 2000) 
   }
 
   return (
@@ -137,7 +154,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                       {...field} 
                       value={field.value ?? ''}
                       rows={10}
-                      className='resize-none pr-10' 
+                      className='resize-none pr-10 h-60' 
                       placeholder='Add a description to your video' 
                     />
                   </FormControl>
@@ -169,6 +186,40 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                 </FormItem>
               )}
              />
+          </div>
+          <div className='flex flex-col gap-y-8 lg:col-span-2'>
+            <div className='flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit'>
+              <div className='aspect-video overflow-hidden relative'>
+                <VideoPlayer 
+                  playbackId={video.muxPlaybackId}
+                  thumbnailUrl={video.thumbnailUrl}
+                />
+              </div>
+              <div className='p-4 flex flex-col gap-y-6'>
+                <div className='flex justify-between items-center gap-x-2'>
+                  <div className='flex flex-col gap-y-1'>
+                    <p className='text-muted-foreground text-xs'>Video link</p>
+                    <div className='flex items-center gap-x-2'>
+                      <Link href={`/videos/${video.id}`}>
+                        <p className='line-clamp-1 text-sm text-blue-500'>
+                          { fullUrl }
+                        </p>
+                      </Link>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='icon'
+                        className='shrink-0'
+                        onClick={onCopy}
+                        disabled={isCopied}
+                      >
+                        {isCopied ? <CopyCheckIcon /> : <CopyIcon />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </form>
