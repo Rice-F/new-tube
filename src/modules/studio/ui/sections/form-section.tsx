@@ -52,8 +52,10 @@ import { videosUpdateSchema } from '@/db/schema';
 import { VideoPlayer } from '@/modules/videos/ui/components/video-player'
 
 import Link from 'next/link'
-
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+import { THUMBNAIL_FALLBACK } from '@/modules/videos/constants'
 
 interface FormSectionProps {
   videoId: string;
@@ -165,7 +167,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                   <FormMessage />
                 </FormItem>
               )}
-             />
+            />
             <FormField
               control={form.control}
               name="description"
@@ -180,6 +182,37 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                       className='resize-none pr-10 h-60' 
                       placeholder='Add a description to your video' 
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField 
+              control={form.control}
+              name="thumbnailUrl"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Thumbnail</FormLabel>
+                  <FormControl>
+                    <div className='p-0.5 border border-dashed border-neutral-400 relative h-[84px] w-[153px] group duration-300 size-7'>
+                      <Image 
+                        src={video.thumbnailUrl ?? THUMBNAIL_FALLBACK}
+                        fill
+                        alt='Thumbnail'
+                        className='object-cover'
+                      />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            size="icon"
+                            className='bg-black/50 hover:bg-black/50 absolute top-1 right-1 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100'
+                          >
+                            <MoreVerticalIcon className='text-white' />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </DropdownMenu>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -208,7 +241,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                   <FormMessage />
                 </FormItem>
               )}
-             />
+            />
           </div>
           <div className='flex flex-col gap-y-8 lg:col-span-2'>
             <div className='flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit'>
