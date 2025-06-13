@@ -89,6 +89,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
 
   const [thumbnailUploadModalOpen, setThumbnailUploadModalOpen] = useState(false)
   
+  // 更新视频信息
   const update = trpc.videos.update.useMutation({
     onSuccess: () => {
       utils.studio.getMany.invalidate() // 更新成功后，重新获取视频列表
@@ -100,6 +101,19 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     }
   })
 
+  // restore thumbnail
+  const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
+    onSuccess: () => {
+      utils.studio.getMany.invalidate() // 更新成功后，重新获取视频列表
+      utils.studio.getOne.invalidate({ id: videoId }) // 更新成功后，重新获取当前视频详情
+      toast.success('Thumbnail restored')
+    },
+    onError: () => {
+      toast.error('Something went wrong')
+    }
+  })
+
+  // 删除当前视频
   const remove = trpc.videos.remove.useMutation({
     onSuccess: () => {
       utils.studio.getMany.invalidate() // 更新成功后，重新获取视频列表
@@ -234,7 +248,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                               <SparklesIcon className='size-4 mr-1' />
                               AI-generated
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => restoreThumbnail.mutate({ id: video.id })}>
                               <RotateCcwIcon className='size-4 mr-1' />
                               Restore
                             </DropdownMenuItem>

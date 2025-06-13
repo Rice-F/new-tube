@@ -7,6 +7,34 @@ import { protectedProcedure, createTRPCRouter } from '@/trpc/init'
 import { and, eq } from 'drizzle-orm'
 
 export const videosRouter = createTRPCRouter({
+  restoreThumbnail: protectedProcedure
+    .input(z.object({ id: z.string().uuid() })) // 输入验证规则，确保id是字符串
+    .mutation(async ({ ctx, input }) => {
+      const {id: userId} = ctx.user
+      
+      const [exitingVideo] = await db
+        .select()
+        .from(videos)
+        .where(and(
+          eq(videos.id, input.id), // 确保查询的是指定的视频
+          eq(videos.userId, userId) // 确保用户只能操作自己的视频
+        ))
+      if(!exitingVideo) throw new TRPCError({ code: 'NOT_FOUND' })
+      if(!exitingVideo.muxPlaybackId) throw new TRPCError({ code: 'BAD_REQUEST' })
+
+      const thumbnailUrl = `https://image.mux.com/${exitingVideo.muxPlaybackId}/thumbnail.jpg`
+    
+      const [updateVideo] = await db
+        .update(videos)
+        .set({ thumbnailUrl })
+        .where(and(
+          eq(videos.id, input.id), // 确保更新的是指定的视频
+          eq(videos.userId, userId) // 确保用户只能更新自己的视频
+        ))
+        .returning()
+      
+      return updateVideo
+    }),
   remove: protectedProcedure
     .input(z.object({ id: z.string().uuid() })) // 输入验证规则，确保id是字符串
     .mutation(async ({ ctx, input }) => {
