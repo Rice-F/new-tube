@@ -1,42 +1,49 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
+import { z } from "zod";
+import { auth } from '@clerk/nextjs/server'
+import { db } from "@/db";
+import { videos, users } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+
 const f = createUploadthing();
 
-const auth = (req: Request) => ({ id: "fakeId" }); // Fake auth function
-
-// FileRouter for your app, can contain multiple FileRoutes
+// 上传路由
 export const ourFileRouter = {
-  // Define as many FileRoutes as you like, each with a unique routeSlug
-  imageUploader: f({
+  thumbnailUploader: f({
     image: {
-      /**
-       * For full list of options and defaults, see the File Route API reference
-       * @see https://docs.uploadthing.com/file-routes#route-config
-       */
       maxFileSize: "4MB",
       maxFileCount: 1,
     },
   })
-    // Set permissions and file types for this FileRoute
-    .middleware(async ({ req }) => {
-      // This code runs on your server before upload
-      const user = await auth(req);
+    .input(z.object({
+      videoId: z.string().uuid(),
+    }))
+    // 中间件return的值会传递给onUploadComplete的metadata
+    .middleware(async ({ input }) => {
+      const { userId: clerkUserId } = await auth();
+      if (!clerkUserId) throw new UploadThingError("Unauthorized");
 
-      // If you throw, the user will not be able to upload
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.clerkId, clerkUserId));
       if (!user) throw new UploadThingError("Unauthorized");
 
-      // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: user.id };
+      return { user, ...input };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
-
-      console.log("file url", file.ufsUrl);
-
-      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { uploadedBy: metadata.userId };
+      await db
+        .update(videos)
+        .set({ thumbnailUrl: file.ufsUrl }) // 上传后文件的访问地址
+        .where(
+          and(
+            eq(videos.id, metadata.videoId),
+            eq(videos.userId, metadata.user.id)
+          )
+        );
+      return { uploadedBy: metadata.user.id };
     }),
 } satisfies FileRouter;
 
