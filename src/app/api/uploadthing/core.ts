@@ -1,5 +1,5 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { UploadThingError } from "uploadthing/server";
+import { UploadThingError, UTApi } from "uploadthing/server";
 
 import { z } from "zod";
 import { auth } from '@clerk/nextjs/server'
@@ -7,9 +7,10 @@ import { db } from "@/db";
 import { videos, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
+import logger from '@/lib/logger'
+
 const f = createUploadthing();
 
-// 上传路由
 export const ourFileRouter = {
   thumbnailUploader: f({
     image: {
@@ -22,21 +23,52 @@ export const ourFileRouter = {
     }))
     // 中间件return的值会传递给onUploadComplete的metadata
     .middleware(async ({ input }) => {
+      // 验证clerk用户
       const { userId: clerkUserId } = await auth();
       if (!clerkUserId) throw new UploadThingError("Unauthorized");
 
+      // 验证数据库用户
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.clerkId, clerkUserId));
       if (!user) throw new UploadThingError("Unauthorized");
 
+      // 验证视频是否存在
+      const [exitingVideo] = await db
+        .select({
+          thumbnailKey: videos.thumbnailKey,
+        })
+        .from(videos)
+        .where(and(
+          eq(videos.id, input.videoId),
+          eq(videos.userId, user.id)
+        ))
+      if (!exitingVideo) throw new UploadThingError("Video not found");
+      logger.info(`image hook middleware, ${exitingVideo.thumbnailKey}`)
+      if (exitingVideo.thumbnailKey) {
+        const utApi = new UTApi(); 
+        await utApi.deleteFiles(exitingVideo.thumbnailKey); // 清除uploadthing旧的thumbnail
+        await db
+          .update(videos)
+          .set({ thumbnailKey: null, thumbnailUrl: null }) // 清除数据库中旧的thumbnail
+          .where(
+            and(
+              eq(videos.id, input.videoId),
+              eq(videos.userId, user.id)
+            )
+          );
+      }
+
       return { user, ...input };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       await db
         .update(videos)
-        .set({ thumbnailUrl: file.ufsUrl }) // 上传后文件的访问地址
+        .set({ 
+          thumbnailUrl: file.ufsUrl, // 上传后文件的访问地址
+          thumbnailKey: file.key, // 上传后文件的唯一标识符
+        }) 
         .where(
           and(
             eq(videos.id, metadata.videoId),

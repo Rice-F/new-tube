@@ -12,6 +12,9 @@ import { db } from "@/db"
 import { mux } from '@/lib/mux'
 import { videos } from '@/db/schema'
 
+import { UTApi } from "uploadthing/server";
+import logger from '@/lib/logger'
+
 const SIGNING_SECRET = process.env.MUX_WEBHOOK_SECRET!
 
 // 联合类型
@@ -79,22 +82,37 @@ export const POST = async (request: Request) => {
         return new Response("Missing playback ID", { status: 400 })
       }
 
-      const thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`
-      const previewUrl = `https://image.mux.com/${playbackId}/animated.gif`
-
+      const tempThumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`
+      const tempPreviewUrl = `https://image.mux.com/${playbackId}/animated.gif`
       const duration = data.duration ? Math.round(data.duration * 1000) : 0;
 
-      await db
-        .update(videos)
-        .set({
-          muxStatus: data.status,
-          muxPlaybackId: playbackId,
-          muxAssetId: data.id,
-          thumbnailUrl,
-          previewUrl,
-          duration
-        })
-        .where(eq(videos.muxUploadId, data.upload_id))
+      const utApi = new UTApi();
+      const [uploadThumbnail, uploadPreview] = await utApi.uploadFilesFromUrl([tempThumbnailUrl, tempPreviewUrl])
+
+      if(!uploadThumbnail.data || !uploadPreview.data) {
+        return new Response("Failed to upload thumbnail or preview", { status: 500 })
+      }
+      const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadThumbnail.data
+      const { key: previewKey, ufsUrl: previewUrl } = uploadPreview.data
+
+      try {
+        await db
+          .update(videos)
+          .set({
+            muxStatus: data.status,
+            muxPlaybackId: playbackId,
+            muxAssetId: data.id,
+            thumbnailUrl,
+            thumbnailKey,
+            previewUrl,
+            previewKey,
+            duration
+          })
+          .where(eq(videos.muxUploadId, data.upload_id))
+      }catch(err) {
+        logger.error(`db fail, ${err}`)
+      }
+
       break;
     }
 

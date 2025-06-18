@@ -144,7 +144,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
     setTimeout(() => {
       setIsCopied(false)
     }
-    , 2000) 
+    , 2000)
   }
 
   return (
@@ -156,6 +156,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* header */}
           <div className='flex items-center justify-between mb-6'>
             <div>
               <h1 className='text-2xl font-bold'>Video details</h1>
@@ -179,6 +180,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
             </div>
           </div>
           <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
+            {/* left */}
             <div className='space-y-8 lg:col-span-3'>
               <FormField
                 control={form.control}
@@ -226,6 +228,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                         <Image 
                           src={video.thumbnailUrl ?? THUMBNAIL_FALLBACK}
                           fill
+                          sizes='153px'
                           alt='Thumbnail'
                           className='object-cover'
                         />
@@ -285,6 +288,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                 )}
               />
             </div>
+            {/* right */}
             <div className='flex flex-col gap-y-8 lg:col-span-2'>
               <div className='flex flex-col gap-4 bg-[#F9F9F9] rounded-xl overflow-hidden h-fit'>
                 <div className='aspect-video overflow-hidden relative'>

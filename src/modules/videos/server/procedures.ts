@@ -5,6 +5,7 @@ import {videos, videosUpdateSchema} from '@/db/schema'
 import {TRPCError} from '@trpc/server'
 import { protectedProcedure, createTRPCRouter } from '@/trpc/init'
 import { and, eq } from 'drizzle-orm'
+import { UTApi } from "uploadthing/server";
 
 export const videosRouter = createTRPCRouter({
   restoreThumbnail: protectedProcedure
@@ -20,13 +21,35 @@ export const videosRouter = createTRPCRouter({
           eq(videos.userId, userId) // 确保用户只能操作自己的视频
         ))
       if(!exitingVideo) throw new TRPCError({ code: 'NOT_FOUND' })
+
+      if (exitingVideo.thumbnailKey) {
+        const utApi = new UTApi(); 
+        await utApi.deleteFiles(exitingVideo.thumbnailKey); // 清除uploadthing旧的thumbnail
+        await db
+          .update(videos)
+          .set({ thumbnailKey: null, thumbnailUrl: null }) // 清除数据库中旧的thumbnail
+          .where(
+            and(
+              eq(videos.id, input.id),
+              eq(videos.userId, userId)
+            )
+          );
+      }
+
       if(!exitingVideo.muxPlaybackId) throw new TRPCError({ code: 'BAD_REQUEST' })
 
-      const thumbnailUrl = `https://image.mux.com/${exitingVideo.muxPlaybackId}/thumbnail.jpg`
+      const tempThumbnailUrl = `https://image.mux.com/${exitingVideo.muxPlaybackId}/thumbnail.jpg`
+
+      const utApi = new UTApi(); 
+      const uploadThumbnail = await utApi.uploadFilesFromUrl(tempThumbnailUrl)
+      if(!uploadThumbnail.data) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' })
+      }
+      const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadThumbnail.data
     
       const [updateVideo] = await db
         .update(videos)
-        .set({ thumbnailUrl })
+        .set({ thumbnailUrl, thumbnailKey })
         .where(and(
           eq(videos.id, input.id), // 确保更新的是指定的视频
           eq(videos.userId, userId) // 确保用户只能更新自己的视频

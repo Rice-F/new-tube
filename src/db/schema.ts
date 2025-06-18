@@ -48,7 +48,9 @@ export const videos = pgTable("videos", {
   muxTrackId: text("mux_track_id").unique(), // 视频字幕
   muxTrackStatus: text("mux_track_status"), // 视频字幕
   thumbnailUrl: text('thumbnail_url'), // 缩略图
+  thumbnailKey: text('thumbnail_key'), // 缩略图存储的key
   previewUrl: text('preview_url'),  // 预览
+  previewKey: text('preview_key'), // 预览存储的key
   duration: integer("duration").default(0).notNull(),
   visibility: videoVisibility('visibility').default('private').notNull(),
   userId: uuid("user_id").references(() => users.id, { // 外键 - 关联到users表的id字段

@@ -1,7 +1,6 @@
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { UploadDropzone } from '@/lib/uploadthing';
 import { trpc } from '@/trpc/client';
-import { on } from 'events';
 
 interface ThumbnailUploadModalProps {
   open: boolean;

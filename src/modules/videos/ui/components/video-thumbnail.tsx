@@ -23,7 +23,8 @@ export const VideoThumbnail = ({
         <Image
           src={imageUrl ?? THUMBNAIL_FALLBACK}
           alt={title}
-          fill 
+          fill
+          sizes='(max-width: 768px) 100vw'
           className='h-full w-full object-cover group-hover:opacity-0'
         />
         {/* 预览gif */}
@@ -32,6 +33,7 @@ export const VideoThumbnail = ({
           alt={title}
           unoptimized={!!previewUrl} // gif
           fill 
+          sizes='(max-width: 768px) 100vw'
           className='h-full w-full object-cover opacity-0 group-hover:opacity-100'
         />
       </div>
