@@ -7,8 +7,6 @@ import { db } from "@/db";
 import { videos, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
-import logger from '@/lib/logger'
-
 const f = createUploadthing();
 
 export const ourFileRouter = {
@@ -25,14 +23,14 @@ export const ourFileRouter = {
     .middleware(async ({ input }) => {
       // 验证clerk用户
       const { userId: clerkUserId } = await auth();
-      if (!clerkUserId) throw new UploadThingError("Unauthorized");
+      if (!clerkUserId) throw new UploadThingError("Unauthorized")
 
       // 验证数据库用户
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.clerkId, clerkUserId));
-      if (!user) throw new UploadThingError("Unauthorized");
+      if (!user) throw new UploadThingError("Unauthorized")
 
       // 验证视频是否存在
       const [exitingVideo] = await db
@@ -44,11 +42,12 @@ export const ourFileRouter = {
           eq(videos.id, input.videoId),
           eq(videos.userId, user.id)
         ))
-      if (!exitingVideo) throw new UploadThingError("Video not found");
-      logger.info(`image hook middleware, ${exitingVideo.thumbnailKey}`)
+      if (!exitingVideo) throw new UploadThingError("Video not found")
+
       if (exitingVideo.thumbnailKey) {
-        const utApi = new UTApi(); 
+        const utApi = new UTApi();
         await utApi.deleteFiles(exitingVideo.thumbnailKey); // 清除uploadthing旧的thumbnail
+        
         await db
           .update(videos)
           .set({ thumbnailKey: null, thumbnailUrl: null }) // 清除数据库中旧的thumbnail
