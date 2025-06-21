@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'image.mux.com'
       },
+      // uploadthing 的图片
       {
         protocol: 'https',
         hostname: 'szxu79mai4.ufs.sh'

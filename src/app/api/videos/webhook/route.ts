@@ -13,6 +13,7 @@ import { mux } from '@/lib/mux'
 import { videos } from '@/db/schema'
 
 import { UTApi } from "uploadthing/server";
+import logger from '@/lib/logger'
 
 const SIGNING_SECRET = process.env.MUX_WEBHOOK_SECRET!
 
@@ -71,26 +72,64 @@ export const POST = async (request: Request) => {
       const data = payload.data as VideoAssetReadyWebhookEvent["data"]
       const playbackId = data.playback_ids?.[0].id
 
-      if(!data.upload_id) return new Response("Missing upload Id", { status: 400 })
-
-      if(!playbackId) return new Response("Missing playback ID", { status: 400 })
+      if(!data.upload_id || !playbackId) {
+        return logger.error("Missing upload Id or playback ID")
+      }
 
       const tempThumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg`
       const tempPreviewUrl = `https://image.mux.com/${playbackId}/animated.gif`
       const duration = data.duration ? Math.round(data.duration * 1000) : 0;
 
-      const thumbnailKey = '123'
-      const previewKey = '123'
+      const utApi = new UTApi();
 
-      // 将mux生成的thumbnail和preview上传到uloadthing，上传时间过长，影响时间响应
-      // const utApi = new UTApi();
-      // const [uploadThumbnail, uploadPreview] = await utApi.uploadFilesFromUrl([tempThumbnailUrl, tempPreviewUrl])
+      // thumbnail - 确保异步操作不会阻塞事件循环 
+      setImmediate(async () => {
+        try {
+          // 上传至uploadthing
+          const uploadThumbnail = await utApi.uploadFilesFromUrl(tempThumbnailUrl)
 
-      // if(!uploadThumbnail.data?.ufsUrl || !uploadPreview.data?.ufsUrl) {
-      //   return new Response("Failed to upload thumbnail or preview", { status: 500 })
-      // }
-      // const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadThumbnail.data
-      // const { key: previewKey, ufsUrl: previewUrl } = uploadPreview.data
+          if(!uploadThumbnail.data?.ufsUrl) {
+            return logger.error("Failed to upload thumbnail")
+          }
+
+          const { key: thumbnailKey, ufsUrl: thumbnailUrl } = uploadThumbnail.data
+
+          await db
+            .update(videos)
+            .set({
+              thumbnailUrl,
+              thumbnailKey,
+            })
+            .where(eq(videos.muxUploadId, data.upload_id!)) // data.upload_id! 表示非空断言
+        }catch(err) {
+          logger.error('Error processing video.asset.ready webhook:', err)
+        }
+      }) 
+
+      // previewUrl
+      setImmediate(async () => {
+        try {
+          // 上传至uploadthing
+          const uploadPreview = await utApi.uploadFilesFromUrl(tempPreviewUrl)
+
+          if(!uploadPreview.data?.ufsUrl) {
+            return logger.error("Failed to upload preview")
+          }
+
+          const { key: previewKey, ufsUrl: previewUrl } = uploadPreview.data
+
+          await db
+            .update(videos)
+            .set({
+              previewUrl,
+              previewKey,
+            })
+            .where(eq(videos.muxUploadId, data.upload_id!))
+        }catch (err) {
+          logger.error('Error processing video.asset.ready webhook:', err)
+        }
+
+      })
 
       await db
         .update(videos)
@@ -98,10 +137,6 @@ export const POST = async (request: Request) => {
           muxStatus: data.status,
           muxPlaybackId: playbackId,
           muxAssetId: data.id,
-          thumbnailUrl: tempThumbnailUrl,
-          thumbnailKey,
-          previewUrl: tempPreviewUrl,
-          previewKey,
           duration
         })
         .where(eq(videos.muxUploadId, data.upload_id))
