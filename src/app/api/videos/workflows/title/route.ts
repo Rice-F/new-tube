@@ -22,6 +22,7 @@ export const { POST } = serve(
     const input = context.requestPayload as InputType
     const { userId, videoId } = input
 
+    // video
     const video = await context.run('get-video', async () => {
       const [existingVideo] = await db
         .select()
@@ -37,36 +38,58 @@ export const { POST } = serve(
 
     if (video instanceof Error) throw video
 
-    // { status, body }  generatedTitle
-    const { status, body } = await context.api.openai.call(
-      "generate-title",
-      {
-        baseURL: "https://api.deepseek.com",
-        token: process.env.DEEPSEEK_API_KEY!,
-        operation: "chat.completions.create",
-        body: {
-          model: "deepseek-chat",
-          messages: [
-            {
-              role: "system",
-              content: TITLE_SYSTEM_PROMPT,
-            },
-            {
-              role: "user",
-              content: "hello, this is a new-tube'"
-            }
-          ]
-        }
-      }
-    )
+    // subtitle
+    const transcript = await context.run('get-transcript', async () => {
+      // 拼接字幕远程地址
+      const trackUrl = `https://stream.mux.com/${video.muxPlaybackId}/text/${video.muxTrackId}.txt`
 
-    const title = body.choices[0].message.content
+      // 异步获取字幕纯文本
+      const response = await fetch(trackUrl)
+      const text = await response.text()
+
+      if(!text) throw new Error('Bad request')
+
+      return text
+    })
+
+    // generatedTitle
+    const generatedTitle = await context.run('generate-title', async () => {
+      const apiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+
+      const body = {
+        model: 'GLM-Z1-Flash',
+        messages: [
+          { role: 'system', content:  TITLE_SYSTEM_PROMPT},
+          { role: 'user', content:  transcript}
+        ],
+      }
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.ZHIPU_API_KEY}`,
+        },
+        body: JSON.stringify(body),
+      })
+
+      if(!response.ok) throw new Error('ZHIPU failed')
+
+      const resData = await response.json()
+      const data = resData.choices?.[0].message?.content || ''
+
+      // 去除<think></think>推理部分
+      let noThinkData = ''
+      if(data) noThinkData = data.replace(/<think>[\s\S]*?<\/think>/gi, '')
+
+      return noThinkData
+    })
 
     await context.run("update-video", async () => {
       await db
         .update(videos)
         .set({
-          title: title || video.title
+          title: generatedTitle || video.title
         })
         .where(and(
           eq(videos.id, video.id),
