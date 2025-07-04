@@ -31,10 +31,12 @@ export const videosRouter = createTRPCRouter({
       const { id: userId } = ctx.user
 
       const { workflowRunId } = await workflow.trigger({
+        // workflow的地址
         url: `${process.env.UPSTASH_WORKFLOW_URL}/api/videos/workflows/title`,
         body: { userId, videoId: input.id }, 
       }) 
 
+      // workflow 运行标识
       return workflowRunId
     }),
   generateDescription: protectedProcedure
