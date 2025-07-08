@@ -57,7 +57,7 @@ export const { POST } = serve(
       const apiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
       const body = {
-        model: 'GLM-Z1-Flash',
+        model: 'GLM-4.1V-Thinking-FlashX',
         messages: [
           { role: 'system', content:  TITLE_SYSTEM_PROMPT},
           { role: 'user', content:  transcript}
@@ -78,11 +78,7 @@ export const { POST } = serve(
       const resData = await response.json()
       const data = resData.choices?.[0].message?.content || ''
 
-      // 去除<think></think>推理部分
-      let noThinkData = ''
-      if(data) noThinkData = data.replace(/<think>[\s\S]*?<\/think>/gi, '')
-
-      return noThinkData
+      return data
     })
 
     if(!generatedTitle)  return new Error('Bad Request')
