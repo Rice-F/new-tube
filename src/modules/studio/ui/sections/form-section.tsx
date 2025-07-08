@@ -52,6 +52,7 @@ import {
 } from '@/components/ui/select'
 
 import { ThumbnailUploadModal } from '../components/thumbnail-upload-modal';
+import { ThumbnailGenerateModal } from '../components/thumbnail-generate-modal';
 
 import { videosUpdateSchema } from '@/db/schema';
 
@@ -89,6 +90,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
   const [categories] = trpc.categories.getMany.useSuspenseQuery()
 
   const [thumbnailUploadModalOpen, setThumbnailUploadModalOpen] = useState(false)
+  const [thumbnailGenerateModalOpen, setThumbnailGenerateModalOpen] = useState(false)
   
   // 更新视频信息
   const update = trpc.videos.update.useMutation({
@@ -123,14 +125,14 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
   })
 
   // generate thumbnail
-  const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
-    onSuccess: () => {
-      toast.success('Thumbnail generation started', { description: 'This may take a while.' })
-    },
-    onError: () => {
-      toast.error('Something went wrong')
-    }
-  })
+  // const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
+  //   onSuccess: () => {
+  //     toast.success('Thumbnail generation started', { description: 'This may take a while.' })
+  //   },
+  //   onError: () => {
+  //     toast.error('Something went wrong')
+  //   }
+  // })
 
   // restore thumbnail
   const restoreThumbnail = trpc.videos.restoreThumbnail.useMutation({
@@ -180,6 +182,11 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
 
   return (
     <>
+      <ThumbnailGenerateModal 
+        open={ thumbnailGenerateModalOpen }
+        videoId={video.id}
+        onOpenChange={ setThumbnailGenerateModalOpen }
+      />
       <ThumbnailUploadModal 
         open={thumbnailUploadModalOpen}
         videoId={video.id}
@@ -312,7 +319,7 @@ export const FormSectionSuspense = ({ videoId }: FormSectionProps) => {
                               <ImagePlusIcon className='size-4 mr-1' />
                               Change
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => generateThumbnail.mutate({ id: video.id })}>
+                            <DropdownMenuItem onClick={() => setThumbnailGenerateModalOpen(true)}>
                               <SparklesIcon className='size-4 mr-1' />
                               AI-generated
                             </DropdownMenuItem>
