@@ -81,7 +81,7 @@ export const { POST } = serve(
 
     if(!generatedThumbnail)  return new Error('Bad Request')
 
-    // AI生成的图片是临时的，需要上传到永久存储
+    // AI生成的图片是临时的，需要上传到uploadthing永久存储
     const uploadedThumbnail = await context.run("upload-thumbnail", async () => {
       const { data } = await utApi.uploadFilesFromUrl(generatedThumbnail)
 
